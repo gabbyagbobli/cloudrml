@@ -1,0 +1,23 @@
+# R specific
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+.Renviron
+*.Rcheck/
+
+# Package build artifacts
+cloudrml_*.tar.gz
+src/*.o
+src/*.so
+inst/doc
+
+# Deployment assets (user-generated)
+deploy/
+plumber.R
+Dockerfile
+*.rds
+
+# OS specific
+.DS_Store
+Thmubs.db
