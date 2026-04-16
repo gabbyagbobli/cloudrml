@@ -19,6 +19,12 @@ cloudrml_init <- function(model_path, packages = NULL, output_dir = ".") {
     file.copy(model_path, dest_model_path, overwrite = TRUE)
   }
   
+  # Filter out base R packages that shouldn't be re-installed
+  base_pkgs <- c("base", "compiler", "datasets", "graphics", "grDevices", "grid", 
+                 "methods", "parallel", "splines", "stats", "stats4", "tcltk", 
+                 "tools", "utils")
+  packages <- setdiff(packages, base_pkgs)
+  
   # Prepare template data
   data <- list(
     model_path = basename(model_path),
