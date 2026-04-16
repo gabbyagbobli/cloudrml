@@ -15,7 +15,7 @@ cloudrml_init <- function(model_path, packages = NULL, output_dir = ".") {
   
   # Copy model to output directory
   dest_model_path <- file.path(output_dir, basename(model_path))
-  if (normalizePath(model_path) != normalizePath(dest_model_path)) {
+  if (normalizePath(model_path, mustWork = FALSE) != normalizePath(dest_model_path, mustWork = FALSE)) {
     file.copy(model_path, dest_model_path, overwrite = TRUE)
   }
   
@@ -84,18 +84,22 @@ cloudrml_create_repo <- function(project_id, repository = "cloudrml-models", loc
 #' @param repository Artifact Registry repository name
 #' @param location GCP Region
 #' @param tag Image tag (defaults to "latest")
+#' @param dir Directory containing the Dockerfile (defaults to current)
 #' @export
-cloudrml_build <- function(project_id, image_name, repository = "cloudrml-models", location = "us-central1", tag = "latest") {
+cloudrml_build <- function(project_id, image_name, repository = "cloudrml-models", 
+                           location = "us-central1", tag = "latest", dir = ".") {
   check_auth()
   image_uri <- sprintf("%s-docker.pkg.dev/%s/%s/%s:%s", location, project_id, repository, image_name, tag)
   
   message("\ud83d\ude80 Submitting build to Google Cloud Build...")
   message("\ud83d\udce6 Image URI: ", image_uri)
+  message("\ud83d\udcc2 Build Context: ", dir)
   
   args <- c(
     "builds", "submit",
     "--tag", image_uri,
-    "--project", project_id
+    "--project", project_id,
+    dir
   )
   
   processx::run("gcloud", args, echo = TRUE)
@@ -147,15 +151,16 @@ cloudrml_deploy <- function(service_name, project_id, location = "us-central1", 
 #'
 #' @param image_name Name of the local image
 #' @param port Local port to map (default 8000)
+#' @param dir Directory containing the Dockerfile (defaults to current)
 #' @export
-cloudrml_test <- function(image_name, port = 8000) {
+cloudrml_test <- function(image_name, port = 8000, dir = ".") {
   check_binary("docker")
   message("\ud83e\uddea Testing container locally on port ", port, "...")
   message("\u2139\ufe0f This requires Docker to be running locally.")
   
   # First build locally
   message("\ud83d\udee0\ufe0f Building local image: ", image_name)
-  processx::run("docker", c("build", "-t", image_name, "."), echo = TRUE)
+  processx::run("docker", c("build", "-t", image_name, dir), echo = TRUE)
   
   message("\ud83d\uddfa\ufe0f Starting container...")
   message("\u2139\ufe0f Press Ctrl+C in the R console to stop.")

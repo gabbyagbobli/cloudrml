@@ -3,7 +3,7 @@
 \title{Build Container Image with Google Cloud Build}
 \usage{
 cloudrml_build(project_id, image_name, repository = "cloudrml-models",
-  location = "us-central1", tag = "latest")
+  location = "us-central1", tag = "latest", dir = ".")
 }
 \arguments{
 \item{project_id}{Google Cloud Project ID}
@@ -15,6 +15,8 @@ cloudrml_build(project_id, image_name, repository = "cloudrml-models",
 \item{location}{GCP Region}
 
 \item{tag}{Image tag (defaults to "latest")}
+
+\item{dir}{Directory containing the Dockerfile (defaults to current)}
 }
 \description{
 Submits a Docker build to Google Cloud Build and pushes the resulting image to Artifact Registry.

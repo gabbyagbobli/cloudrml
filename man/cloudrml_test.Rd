@@ -2,12 +2,14 @@
 \alias{cloudrml_test}
 \title{Test Container Locally}
 \usage{
-cloudrml_test(image_name, port = 8000)
+cloudrml_test(image_name, port = 8000, dir = ".")
 }
 \arguments{
 \item{image_name}{Name of the local image}
 
 \item{port}{Local port to map (default 8000)}
+
+\item{dir}{Directory containing the Dockerfile (defaults to current)}
 }
 \description{
 Builds a local Docker image from the current directory and runs it.
