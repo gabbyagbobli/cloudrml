@@ -1,6 +1,6 @@
 Package: cloudrml
 Title: Containerize and Deploy ML Models to Google Cloud
-Version: 0.2.3
+Version: 0.2.4
 Author: Gabriel Agbobli
 Maintainer: Gabriel Agbobli <gabeagbobli@gmail.com>
 Description: Simplifies the process of containerizing R machine learning models 
