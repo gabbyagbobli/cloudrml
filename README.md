@@ -65,6 +65,38 @@ cloudrml_deploy(
 
 ---
 
+## Using Your Deployed Model
+
+Once deployed, your model is a live REST API. You can visit the service URL provided by `cloudrml_deploy()` to see the documentation (at `/__docs__/`) or send data to the `/predict` endpoint.
+
+### 1. Using `curl` (Command Line)
+```bash
+curl -X POST "https://your-service-url.a.run.app/predict" \
+     -H "Content-Type: application/json" \
+     -d '[{"feature1": 5.1, "feature2": 3.5}]'
+```
+
+### 2. Using Python
+```python
+import requests
+response = requests.post(
+    "https://your-service-url.a.run.app/predict", 
+    json=[{"feature1": 5.1, "feature2": 3.5}]
+)
+print(response.json())
+```
+
+### 3. Using R
+```R
+library(httr2)
+resp <- request("https://your-service-url.a.run.app/predict") %>%
+  req_body_json(list(list(feature1 = 5.1, feature2 = 3.5))) %>%
+  req_perform()
+resp_body_json(resp)
+```
+
+---
+
 ## Prerequisites & Google Cloud Setup
 
 To use this package, you must have the following installed on your machine:
