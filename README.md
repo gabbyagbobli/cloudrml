@@ -103,7 +103,7 @@ To use this package, you must have the following installed on your machine:
 
 1.  **Google Cloud SDK (gcloud)**: [Install here](https://cloud.google.com/sdk/docs/install).
 2.  **Docker Desktop**: [Install here](https://www.docker.com/products/docker-desktop) (Required for local testing).
-3.  A **Google Cloud Project** with billing enabled: [Read more here](https://developers.google.com/workspace/guides/create-project). Required for deploying your model on GCP 
+3.  A **Google Cloud Project** with billing enabled: [Read more here](https://developers.google.com/workspace/guides/create-project). (Required for deploying your model on GCP) 
 
 ### One-Time GCP Configuration
 Run these commands in your terminal (PowerShell or Command Prompt) to prepare your environment:
