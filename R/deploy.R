@@ -72,7 +72,8 @@ cloudrml_create_repo <- function(project_id, repository = "cloudrml-models", loc
   
   # Check if exists first would be better, but we'll use tryCatch or just let gcloud error
   tryCatch({
-    processx::run("gcloud", args, echo = TRUE)
+    gcloud_path <- Sys.which("gcloud")
+    processx::run(gcloud_path, args, echo = TRUE)
     message("\u2705 Repository ready: ", repository)
   }, error = function(e) {
     if (grepl("already exists", e$message)) {
@@ -108,7 +109,8 @@ cloudrml_build <- function(project_id, image_name, repository = "cloudrml-models
     dir
   )
   
-  processx::run("gcloud", args, echo = TRUE)
+  gcloud_path <- Sys.which("gcloud")
+  processx::run(gcloud_path, args, echo = TRUE)
   message("\u2705 Build complete!")
 }
 
@@ -141,11 +143,12 @@ cloudrml_deploy <- function(service_name, project_id, location = "us-central1", 
     "--cpu", cpu
   )
   
-  processx::run("gcloud", args, echo = TRUE)
+  gcloud_path <- Sys.which("gcloud")
+  processx::run(gcloud_path, args, echo = TRUE)
   
   # Fetch the URL
   url_args <- c("run", "services", "describe", service_name, "--platform", "managed", "--region", location, "--project", project_id, "--format", "value(status.url)")
-  res <- processx::run("gcloud", url_args)
+  res <- processx::run(gcloud_path, url_args)
   url <- trimws(res$stdout)
   
   message("\u2705 Deployment successful!")
@@ -177,25 +180,21 @@ cloudrml_test <- function(image_name, port = 8000, dir = ".") {
 # --- Internal Helpers ---
 
 check_binary <- function(bin) {
-  res <- tryCatch({
-    # works on windows and unix
-    processx::run(if(.Platform$OS.type == "windows") "where" else "which", bin)
-    TRUE
-  }, error = function(e) FALSE)
-  
-  if (!res) {
+  path <- Sys.which(bin)
+  if (path == "" || is.na(path)) {
     stop(sprintf("Dependency not found: '%s'. Please ensure it is installed and in your PATH.", bin))
   }
+  return(unname(path))
 }
 
 check_auth <- function() {
-  check_binary("gcloud")
+  gcloud_path <- check_binary("gcloud")
   
   # Check if authenticated
   res <- tryCatch({
-    processx::run("gcloud", c("auth", "list", "--filter=status:ACTIVE", "--format=value(account)"))
+    processx::run(gcloud_path, c("auth", "list", "--filter=status:ACTIVE", "--format=value(account)"))
   }, error = function(e) {
-    stop("Error checking gcloud authentication. Is gcloud installed?")
+    stop(paste("Error checking gcloud authentication:", e$message))
   })
   
   if (trimws(res$stdout) == "") {
