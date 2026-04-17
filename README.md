@@ -5,18 +5,21 @@
 ## Installation
 
 ```R
-# Coming soon: devtools::install_github("gabrielagbobli/cloudrml")
+# Install the latest version from GitHub
+remotes::install_github("gabbyagbobli/cloudrml")
 ```
+
+---
 
 ## Workflow
 
 ### 1. Initialize Deployment Assets
-Scaffold a `plumber.R` and `Dockerfile` based on your model.
+Scaffold a `plumber.R` and `Dockerfile` based on your model. This command automatically filters out base R packages (like `stats`) to ensure a smooth Docker build.
 
 ```R
 library(cloudrml)
 
-# Scaffold assets into a deployment folder
+# Scaffold assets into a specific deployment folder
 cloudrml_init(
   model_path = "my_model.rds", 
   packages = c("xgboost", "dplyr"),
@@ -24,42 +27,80 @@ cloudrml_init(
 )
 ```
 
-### 2. Test Locally (Optional but Recommended)
-Test your model inside a Docker container on your local machine.
+### 2. Test Locally (Requires Docker)
+Before going to the cloud, verify that your container works on your local machine.
 
 ```R
-# Run locally on port 8000
-cloudrml_test(image_name = "my-model-api")
+# Pass the directory where you scaffolded the assets
+cloudrml_test(image_name = "my-model-api", port = 8000, dir = "deploy")
 ```
+*Visit `http://localhost:8000` to see your API docs!*
 
-### 3. Create Artifact Registry & Build
-Create a repository and submit a build to Google Cloud Build.
+### 3. Setup GCP & Build
+First-time setup requires creating a repository in Artifact Registry. Then, submit your code to Google Cloud Build.
 
 ```R
 # One-time setup: Create the repo
 cloudrml_create_repo(project_id = "my-gcp-project")
 
 # Build and push to Artifact Registry
+# Note: uses 'dir = "deploy"' to tell Google which folder to build
 cloudrml_build(
   project_id = "my-gcp-project",
-  image_name = "my-model-api"
+  image_name = "my-model-api",
+  dir = "deploy"
 )
 ```
 
 ### 4. Deploy to Cloud Run
-Run your container as a serverless API.
+Run your container as a specialized, serverless API.
 
 ```R
-# Deploy to Cloud Run
+# Deploy and get a public URL
 cloudrml_deploy(
   service_name = "my-model-api",
-  project_id = "my-gcp-project",
-  location = "us-central1"
+  project_id = "my-gcp-project"
 )
 ```
 
-## Prerequisites
+---
 
-- [Google Cloud SDK (gcloud)](https://cloud.google.com/sdk/docs/install) installed and authenticated.
-- [Docker](https://www.docker.com/products/docker-desktop) installed for local testing.
-- An active GCP project with Cloud Build, Cloud Run, and Artifact Registry APIs enabled.
+## Prerequisites & Google Cloud Setup
+
+To use this package, you must have the following installed on your machine:
+
+1.  **Google Cloud SDK (gcloud)**: [Install here](https://cloud.google.com/sdk/docs/install).
+2.  **Docker Desktop**: [Install here](https://www.docker.com/products/docker-desktop) (Required for local testing).
+
+### One-Time GCP Configuration
+Run these commands in your terminal (PowerShell or Command Prompt) to prepare your environment:
+
+```bash
+# 1. Login to Google Cloud
+gcloud auth login
+
+# 2. Set your active project
+gcloud config set project [YOUR-PROJECT-ID]
+
+# 3. Enable the required APIs (Mandatory for new projects)
+gcloud services enable artifactregistry.googleapis.com \
+                       cloudbuild.googleapis.com \
+                       run.googleapis.com
+```
+
+---
+
+## Troubleshooting
+
+| Error Message | Likely Cause | Solution |
+| :--- | :--- | :--- |
+| **"Dependency not found: gcloud"** | gcloud is not in your PATH. | Reinstall gcloud SDK or add the `bin` folder to your System PATH. Windows users: verify `gcloud.cmd` is reachable. |
+| **"Error checking gcloud authentication"** | You haven't logged in yet. | Run `gcloud auth login` in your terminal. |
+| **"Port 8000 failed: port is already allocated"** | A previous test container is still running. | Stop the container in Docker Desktop or pick a new port: `port = 8001`. |
+| **"API not enabled"** | Your GCP project hasn't turned on Cloud Build or Artifact Registry. | Run the `gcloud services enable` command listed in the Setup section. |
+| **"Dockerfile not found"** | The `dir` argument is pointing to the wrong place. | Ensure `dir` matches the `output_dir` you used in `cloudrml_init`. |
+
+---
+
+## License
+MIT

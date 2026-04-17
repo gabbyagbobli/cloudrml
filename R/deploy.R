@@ -1,9 +1,17 @@
 #' Initialize Deployment Assets
 #'
+#' Scaffolds a `plumber.R` and `Dockerfile` based on your model. It also copies
+#' the model to the destination directory. Base R packages (e.g., 'stats') are 
+#' automatically filtered out to prevent installation errors during the Docker build.
+#'
 #' @param model_path Path to the saved R model (e.g., "model.rds")
 #' @param packages Character vector of R packages required by the model
-#' @param output_dir Directory to save the assets (defaults to current)
+#' @param output_dir Directory to save the assets (defaults to current directory ".")
 #' @export
+#' @examples
+#' \dontrun{
+#' cloudrml_init("my_model.rds", packages = c("xgboost"), output_dir = "deploy")
+#' }
 cloudrml_init <- function(model_path, packages = NULL, output_dir = ".") {
   if (!file.exists(model_path)) {
     stop("Model file not found: ", model_path)
@@ -54,10 +62,18 @@ cloudrml_init <- function(model_path, packages = NULL, output_dir = ".") {
 
 #' Create Artifact Registry Repository
 #'
+#' Creates a Docker repository in Google Artifact Registry. This is a one-time 
+#' setup step required before you can build and push images.
+#'
 #' @param project_id Google Cloud Project ID
 #' @param repository Repository name (defaults to "cloudrml-models")
 #' @param location GCP Region (defaults to "us-central1")
+#' @note Requires `gcloud` CLI to be installed and authenticated via `gcloud auth login`.
 #' @export
+#' @examples
+#' \dontrun{
+#' cloudrml_create_repo(project_id = "my-project-id")
+#' }
 cloudrml_create_repo <- function(project_id, repository = "cloudrml-models", location = "us-central1") {
   check_auth()
   message("\ud83d\udce6 Creating Artifact Registry repository...")
@@ -86,13 +102,22 @@ cloudrml_create_repo <- function(project_id, repository = "cloudrml-models", loc
 
 #' Build Container Image with Google Cloud Build
 #'
+#' Submits a Docker build to Google Cloud Build and pushes the resulting image 
+#' to Artifact Registry. This allows you to build images without having Docker
+#' installed locally.
+#'
 #' @param project_id Google Cloud Project ID
 #' @param image_name Name for the container image
 #' @param repository Artifact Registry repository name
 #' @param location GCP Region
 #' @param tag Image tag (defaults to "latest")
-#' @param dir Directory containing the Dockerfile (defaults to current)
+#' @param dir Directory containing the Dockerfile (defaults to current directory "."). 
+#' If you scaffolded assets into a folder (e.g., "deploy"), set this to "deploy".
 #' @export
+#' @examples
+#' \dontrun{
+#' cloudrml_build(project_id = "my-project", image_name = "my-model", dir = "deploy")
+#' }
 cloudrml_build <- function(project_id, image_name, repository = "cloudrml-models", 
                            location = "us-central1", tag = "latest", dir = ".") {
   check_auth()
@@ -116,15 +141,23 @@ cloudrml_build <- function(project_id, image_name, repository = "cloudrml-models
 
 #' Deploy to Google Cloud Run
 #'
+#' Deploys a container image from Artifact Registry to Google Cloud Run as 
+#' a serverless API.
+#'
 #' @param service_name Name for the Cloud Run service
 #' @param project_id Google Cloud Project ID
 #' @param location GCP Region
-#' @param image_name Name of the image to deploy
+#' @param image_name Name of the image to deploy (defaults to service_name)
 #' @param repository Artifact Registry repository name
 #' @param tag Image tag
 #' @param memory Memory limit (default "512Mi")
 #' @param cpu CPU count (default "1")
+#' @return The public URL of the deployed service.
 #' @export
+#' @examples
+#' \dontrun{
+#' cloudrml_deploy("my-service", project_id = "my-project")
+#' }
 cloudrml_deploy <- function(service_name, project_id, location = "us-central1", image_name = service_name, 
                             repository = "cloudrml-models", tag = "latest", memory = "512Mi", cpu = "1") {
   check_auth()
@@ -158,10 +191,18 @@ cloudrml_deploy <- function(service_name, project_id, location = "us-central1", 
 
 #' Test Container Locally
 #'
+#' Builds a Docker image locally and starts a container to test your API.
+#'
 #' @param image_name Name of the local image
-#' @param port Local port to map (default 8000)
-#' @param dir Directory containing the Dockerfile (defaults to current)
+#' @param port Local port to map (default 8000). The container's internal port 8080 is mapped to this.
+#' @param dir Directory containing the Dockerfile (defaults to current directory ".").
+#' @note Requires Docker Desktop to be running. If port 8000 is already in use, 
+#' try a different port (e.g., 8001).
 #' @export
+#' @examples
+#' \dontrun{
+#' cloudrml_test("my-model-api", port = 8000, dir = "deploy")
+#' }
 cloudrml_test <- function(image_name, port = 8000, dir = ".") {
   check_binary("docker")
   message("\ud83e\uddea Testing container locally on port ", port, "...")

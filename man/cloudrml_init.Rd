@@ -9,14 +9,15 @@ cloudrml_init(model_path, packages = NULL, output_dir = ".")
 
 \item{packages}{Character vector of R packages required by the model}
 
-\item{output_dir}{Directory to save the assets (defaults to current)}
+\item{output_dir}{Directory to save the assets (defaults to current directory ".")}
 }
 \description{
-Scaffolds a plumber.R API and a Dockerfile based on your model.
-Copies the model file into the output directory to ensure a self-contained build context.
+Scaffolds a \code{plumber.R} and \code{Dockerfile} based on your model. It also copies
+the model to the destination directory. Base R packages (e.g., 'stats') are
+automatically filtered out to prevent installation errors during the Docker build.
 }
 \examples{
 \dontrun{
-cloudrml_init("my_model.rds", packages = c("xgboost", "dplyr"), output_dir = "deploy")
+cloudrml_init("my_model.rds", packages = c("xgboost"), output_dir = "deploy")
 }
 }

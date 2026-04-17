@@ -13,7 +13,7 @@ cloudrml_deploy(service_name, project_id, location = "us-central1",
 
 \item{location}{GCP Region}
 
-\item{image_name}{Name of the image to deploy}
+\item{image_name}{Name of the image to deploy (defaults to service_name)}
 
 \item{repository}{Artifact Registry repository name}
 
@@ -23,15 +23,15 @@ cloudrml_deploy(service_name, project_id, location = "us-central1",
 
 \item{cpu}{CPU count (default "1")}
 }
-\description{
-Deploys a container image from Artifact Registry to Google Cloud Run as a managed serverless service.
-The service is created with '--allow-unauthenticated' enabled.
-}
 \value{
-The URL of the deployed service (invisibly).
+The public URL of the deployed service.
+}
+\description{
+Deploys a container image from Artifact Registry to Google Cloud Run as 
+a serverless API.
 }
 \examples{
 \dontrun{
-cloudrml_deploy("my-model-api", "my-gcp-project")
+cloudrml_deploy("my-service", project_id = "my-project")
 }
 }
